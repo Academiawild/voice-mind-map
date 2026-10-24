@@ -13,7 +13,6 @@ from fastapi.responses import JSONResponse
 APP_HOST = "127.0.0.1"
 APP_PORT = int(os.environ.get("FUNASR_HTTP_PORT", "10096"))
 MIN_AUDIO_BYTES = 1000
-MAX_AUDIO_BYTES = 20 * 1024 * 1024
 
 MODEL_NAME = os.environ.get("FUNASR_MODEL", "paraformer-zh")
 VAD_MODEL_NAME = os.environ.get("FUNASR_VAD_MODEL", "fsmn-vad")
@@ -98,8 +97,6 @@ async def transcribe(audio: UploadFile = File(...)) -> JSONResponse:
         audio_size = input_path.stat().st_size
         if audio_size < MIN_AUDIO_BYTES:
             raise HTTPException(status_code=400, detail="Audio file is too small.")
-        if audio_size > MAX_AUDIO_BYTES:
-            raise HTTPException(status_code=413, detail="Audio file exceeds 20 MB.")
 
         if input_path.suffix.lower() == ".wav":
             shutil.copyfile(input_path, wav_path)

@@ -8,7 +8,6 @@ import {
 import { TranscriptionResponseSchema } from '../../shared/capture';
 import type { CaptureJournalStore } from '../modules/capture-journal/capture-journal';
 
-const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
 const REALTIME_READY_CACHE_MS = 30_000;
 let realtimeReadyCache = {
   checkedAt: 0,
@@ -18,7 +17,6 @@ let realtimeReadyCache = {
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: MAX_AUDIO_BYTES,
     files: 1,
   },
 });
@@ -28,14 +26,6 @@ function uploadAudio(): RequestHandler {
     upload.single('audio')(req, res, (error) => {
       if (!error) {
         next();
-        return;
-      }
-
-      if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
-        res.status(413).json({
-          error: '音频文件不能超过 20 MB。',
-          code: 'AUDIO_TOO_LARGE',
-        });
         return;
       }
 

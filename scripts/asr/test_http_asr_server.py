@@ -27,17 +27,22 @@ class HttpAsrServerTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(raised.exception.status_code, 503)
 
-    async def test_rejects_tiny_and_oversized_complete_files(self) -> None:
+    async def test_rejects_tiny_complete_files(self) -> None:
         http_asr_server.asr_model = Mock()
+        with self.assertRaises(HTTPException) as raised:
+            await http_asr_server.transcribe(
+                upload("recording.wav", http_asr_server.MIN_AUDIO_BYTES - 1)
+            )
+        self.assertEqual(raised.exception.status_code, 400)
 
-        for size, expected_status in [
-            (http_asr_server.MIN_AUDIO_BYTES - 1, 400),
-            (http_asr_server.MAX_AUDIO_BYTES + 1, 413),
-        ]:
-            with self.subTest(size=size):
-                with self.assertRaises(HTTPException) as raised:
-                    await http_asr_server.transcribe(upload("recording.wav", size))
-                self.assertEqual(raised.exception.status_code, expected_status)
+    async def test_accepts_complete_files_larger_than_twenty_megabytes(self) -> None:
+        http_asr_server.asr_model = Mock()
+        http_asr_server.asr_model.generate.return_value = [{"text": "大文件转写"}]
+        response = await http_asr_server.transcribe(
+            upload("recording.wav", 21 * 1024 * 1024)
+        )
+        http_asr_server.asr_model.generate.assert_called_once()
+        self.assertIn("大文件转写", response.body.decode("utf-8"))
 
     async def test_wav_file_skips_ffmpeg(self) -> None:
         http_asr_server.asr_model = Mock()
