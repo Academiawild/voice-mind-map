@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+  --vm-bg: #f4f1ea;
+  --vm-surface: rgba(255, 255, 255, 0.88);
+  --vm-surface-solid: #fffefa;
+  --vm-border: rgba(40, 45, 40, 0.12);
+  --vm-text: #20251f;
+  --vm-muted: #697168;
+  --vm-accent: #255f4b;
+  --vm-accent-soft: #dcece4;
+  --vm-danger: #a13b33;
+  --vm-shadow: 0 18px 50px rgba(42, 39, 31, 0.12);
+  --vm-radius-lg: 22px;
+  --vm-radius-md: 14px;
+  --vm-header-height: 64px;
+  --vm-capture-height: 112px;
+  --vm-activity-width: 360px;
+}

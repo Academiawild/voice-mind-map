@@ -1,0 +1,34 @@
+# Private settings
+.env
+.env.*
+!.env.example
+
+# Runtime files
+*.log
+*.pid
+.runtime-pids.json
+.runtime/
+.start-*.pid
+
+# Installed or generated files
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+dependencies/local/
+outputs/
+failed-transcriptions/
+.cache/
+.vite/
+.vitest/
+*.tsbuildinfo
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editor and system files
+.idea/
+.DS_Store
