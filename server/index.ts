@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { createApp } from './app';
 import { loadEnv } from './config/env';
 import { MindMapChangeService } from './modules/ai/mind-map-change.service';
+import { ApiMindMapChangeProvider } from './infrastructure/ai/api-change-provider';
 import { OllamaMindMapChangeProvider } from './infrastructure/ai/ollama-change-provider';
 import { CaptureJournalStore } from './modules/capture-journal/capture-journal';
 import { attachRealtimeTranscriptionServer } from './realtime-transcription-server';
@@ -13,12 +14,19 @@ import { AudioTranscriptionService } from './modules/transcription/audio-transcr
 const env = loadEnv();
 const shutdownToken = env.localShutdownToken || randomBytes(24).toString('hex');
 const captureJournal = new CaptureJournalStore();
-const localAI = new OllamaMindMapChangeProvider({
-  baseUrl: env.localAiBaseUrl,
-  model: env.localAiModel,
-  contextSize: env.localAiContext,
-  debugMindMap: env.debugMindMap,
-});
+const localAI =
+  env.provider === 'api'
+    ? new ApiMindMapChangeProvider({
+        baseUrl: env.remoteAiBaseUrl!,
+        apiKey: env.remoteAiApiKey!,
+        model: env.remoteAiModel!,
+      })
+    : new OllamaMindMapChangeProvider({
+        baseUrl: env.localAiBaseUrl,
+        model: env.localAiModel,
+        contextSize: env.localAiContext,
+        debugMindMap: env.debugMindMap,
+      });
 const mindMapChangeService = new MindMapChangeService(localAI);
 const audioTranscriptionService = new AudioTranscriptionService({
   serviceUrl: `http://127.0.0.1:${env.funasrHttpPort}/transcribe`,

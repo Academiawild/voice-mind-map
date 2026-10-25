@@ -1,6 +1,6 @@
 # Voice Mind Map
 
-Voice Mind Map 是一个完全在本机运行的 AI 思考整理台。你可以输入文字、实时说话或导入完整音频；本地 FunASR 负责转写，本地 Ollama 模型提议结构化 ChangeSet，后端验证并应用后，前端自动展示变化并支持一步撤销。文字、录音和导图内容都不需要发送到云端模型。
+Voice Mind Map 是一个在本机打开的 AI 思考整理台。你可以输入文字、实时说话或导入完整音频；本地 FunASR 负责转写，本地 Ollama 或明确配置的在线模型提议结构化 ChangeSet，后端验证并应用后，前端自动展示变化并支持一步撤销。默认本地模式不发送内容到云端。选择在线 API 后，转写文字、当前导图和相关整理上下文会发送到配置的服务；语音识别仍在本机完成。
 
 核心链路：
 
@@ -22,7 +22,7 @@ Voice Mind Map 是一个完全在本机运行的 AI 思考整理台。你可以�
 - Python 3.11 或 3.12
 - Git
 - ffmpeg（只处理完整音频文件，不处理实时 PCM）
-- Ollama.app，以及一个已安装的本地文本模型
+- 使用本地模型时，需要 Ollama.app 及一个已安装的本地文本模型；在线 API 模式可跳过
 
 macOS 可通过 Homebrew 安装基础依赖：
 
@@ -33,8 +33,8 @@ brew install node python@3.12 git ffmpeg
 第一次使用：
 
 1. 双击 `install.command`。
-2. 确认 Ollama 中已有 `qwen-q4kp`，或在 `.env` 将 `LOCAL_AI_MODEL` 改成其他已安装模型。
-3. 双击 `start.command`；启动器会在需要时自动打开 Ollama.app。
+2. 选择本地模型时，确认 Ollama 中已有 `qwen-q4kp`，或在 `.env` 将 `LOCAL_AI_MODEL` 改成其他已安装模型；选择在线服务时，按下方“在线 API”配置 `.env`。
+3. 双击 `start.command`；本地模型模式会在需要时自动打开 Ollama.app。
 
 以后只需双击 `start.command`。生产启动会先构建前端，再启动一个同时托管网页、HTTP API 和 WebSocket 的 Node 服务，以及 HTTP ASR、实时 ASR 两个 Python 子进程；生产不运行 Vite。默认网页地址是：
 
@@ -60,9 +60,17 @@ LOCAL_AI_CONTEXT=16384
 
 上面是配置示例，模型名称须与本机 Ollama 已安装的模型一致。本次思考导航改版使用本机的 `huihui_ai/gemma-4-abliterated:26b` 验证；处理长篇碎片可能需要一分钟或更久。程序不会自动安装、切换模型或改写现有 `.env`。
 
+### 在线 API（可选）
+
+在本机 `.env` 设置 `AI_PROVIDER=api`、`REMOTE_AI_BASE_URL`、`REMOTE_AI_MODEL` 和 `REMOTE_AI_API_KEY`，然后重启。基础地址填写兼容 Chat Completions 的 HTTPS 地址（例如 `https://sidrune.ai/v1`）。不要把密钥放入源码、前端、截图或提交到 GitHub。
+
+当前用户选择的在线模型为 `claude-opus-5-5`，两个处理阶段暂时统一使用它；尚未启用 Sonnet 分流。网页服务状态会区分在线 AI 与本地 AI。在线模式不依赖 Ollama；FunASR 和 ffmpeg 仍用于本地语音处理。切回 `AI_PROVIDER=ollama` 即恢复原有本地模型配置。
+
+配置在线 API 不会自动实现边说边生成导图：当前仍是实时转写、结束录音后整理导图。
+
 ## 工作区交互
 
-- 默认是“思路”桌面：可读字号的主题卡片、嵌套念头和全文查找；最上方突出一个有理由的下一步，其他入口可以切换。“我来想一想”把问题带入草稿，“一起推演”让本地 AI 继续分析。
+- 默认是“思路”桌面：可读字号的主题卡片、嵌套念头和全文查找；最上方突出一个有理由的下一步，其他入口可以切换。“我来想一想”把问题带入草稿，“一起推演”让当前配置的 AI 继续分析。
 - “思路 / 导图”切换阅读方式，使用同一份文档；搜索词、阅读位置、选中的切入点和连线说明开关会在本次页面内保留。右栏分别记住全图、各念头和不同视角的阅读位置。顶部“排个先后 / 大胆联想 / 挑战一下”直接启动对应思考。
 - 顶栏：导图标题、节点数、undo/redo、显示全图、服务状态和更多菜单。
 - 底部捕捉条：文字输入、`Cmd+Enter` 整理、实时录音、完整音频导入和当前处理阶段。

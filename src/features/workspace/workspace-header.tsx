@@ -55,7 +55,7 @@ export function WorkspaceHeader(props: {
           className={`service-indicator ${ready ? 'is-ready' : 'is-offline'}`}
           title={
             status
-              ? `本地 AI: ${status.ai.model}\nHTTP ASR: ${status.transcription.http.model}\n实时 ASR: ${status.transcription.realtime.model}`
+              ? `${status.ai.provider === 'api' ? '在线 AI' : '本地 AI'}: ${status.ai.model}\nHTTP ASR: ${status.transcription.http.model}\n实时 ASR: ${status.transcription.realtime.model}`
               : '本地服务离线'
           }
         >
@@ -64,7 +64,7 @@ export function WorkspaceHeader(props: {
             {!status
               ? '服务离线'
               : !status?.ai.ready
-                ? '本地模型离线'
+                ? 'AI 模型未就绪'
                 : speechReady
                   ? '服务正常'
                   : '语音加载中'}

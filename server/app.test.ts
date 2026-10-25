@@ -34,9 +34,9 @@ const env: AppEnv = {
   runtimeId: 'runtime-test',
 };
 
-async function startApp() {
+async function startApp(selectedEnv: AppEnv = env) {
   const app = createApp({
-    env,
+    env: selectedEnv,
     audioTranscriptionService: {
       isReady: async () => false,
     } as AudioTranscriptionService,
@@ -76,6 +76,21 @@ describe('local app contracts and security', () => {
         realtime: { model: 'Paraformer streaming' },
       },
     });
+  });
+
+  it('reports the cloud model without exposing the API key', async () => {
+    const baseUrl = await startApp({
+      ...env,
+      provider: 'api',
+      remoteAiModel: 'test-model',
+      remoteAiBaseUrl: 'https://api.example.test/v1',
+      remoteAiApiKey: 'fixture-token',
+    });
+    const response = await fetch(`${baseUrl}/api/status`);
+    const payload = await response.json();
+    expect(payload.ai).toEqual({ ready: true, provider: 'api', model: 'test-model' });
+    expect(JSON.stringify(payload)).not.toContain('fixture-token');
+    expect(JSON.stringify(payload)).not.toContain('remoteAiApiKey');
   });
 
   it('rejects cross-origin writes with structured JSON', async () => {

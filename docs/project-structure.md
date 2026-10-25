@@ -104,3 +104,7 @@ guard 禁止未授权整图替换、删除根、循环父子、重复 ID、悬�
 AI 推理通过本机 `127.0.0.1:11434` 的 Ollama API 完成。启动器在 Ollama 未运行时打开 Ollama.app，但不会在关闭工作区时强制退出 Ollama，因为它可能同时服务其他本地应用。
 
 `.runtime-pids.json` 当前版本为 4，记录 runtimeId、模式、项目根目录、端口、健康地址和受管进程。关闭时会核对 runtimeId、绝对项目目录、命令标识和监听端口；启动新版时会安全关停同项目的旧 manifest 实例。
+
+## 可选在线 AI
+
+`server/infrastructure/ai/api-change-provider.ts` 提供独立的 HTTPS 在线模型接入；`server/config/env.ts` 解析本地与在线两组配置，`server/index.ts` 选择 provider。`shared/runtime/schema.ts` 和状态路由仅返回服务类型、模型名称及就绪状态，不返回 API 密钥。启动脚本按 provider 决定是否检查 Ollama。

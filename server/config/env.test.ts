@@ -7,6 +7,10 @@ const DEFAULT_FUNASR_PYTHON = 'dependencies/local/asr-venv/bin/python';
 function setEnv(vars: Record<string, string | undefined>) {
   process.env = {
     ...ORIGINAL_ENV,
+    AI_PROVIDER: undefined,
+    REMOTE_AI_BASE_URL: undefined,
+    REMOTE_AI_MODEL: undefined,
+    REMOTE_AI_API_KEY: undefined,
     ...vars,
   };
 }
@@ -66,5 +70,36 @@ describe('loadEnv', () => {
     setEnv({ LOCAL_AI_BASE_URL: 'https://example.com' });
 
     expect(() => loadEnv()).toThrow(/loopback/i);
+  });
+});
+
+describe('explicit cloud configuration', () => {
+  it('accepts a separately configured API without changing the local endpoint', () => {
+    setEnv({
+      AI_PROVIDER: 'api',
+      REMOTE_AI_BASE_URL: 'https://api.example.test/v1',
+      REMOTE_AI_API_KEY: 'fixture-token',
+      REMOTE_AI_MODEL: 'test-model',
+    });
+    expect(loadEnv()).toMatchObject({
+      provider: 'api',
+      remoteAiBaseUrl: 'https://api.example.test/v1',
+      remoteAiModel: 'test-model',
+    });
+  });
+  it('rejects missing cloud credentials and insecure cloud URLs', () => {
+    setEnv({
+      AI_PROVIDER: 'api',
+      REMOTE_AI_BASE_URL: 'https://api.example.test/v1',
+      REMOTE_AI_MODEL: 'test-model',
+    });
+    expect(() => loadEnv()).toThrow();
+    setEnv({
+      AI_PROVIDER: 'api',
+      REMOTE_AI_BASE_URL: 'http://api.example.test/v1',
+      REMOTE_AI_MODEL: 'test-model',
+      REMOTE_AI_API_KEY: 'fixture-token',
+    });
+    expect(() => loadEnv()).toThrow();
   });
 });

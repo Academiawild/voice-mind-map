@@ -63,7 +63,9 @@ export function createApp(options: {
       runtimeId: options.env.runtimeId,
       shutdownToken: options.shutdownToken,
       aiReady: options.aiReady,
-      aiModel: options.env.localAiModel,
+      aiProvider: options.env.provider,
+      aiModel:
+        options.env.provider === 'api' ? options.env.remoteAiModel! : options.env.localAiModel,
       transcriptionModels: {
         http: options.env.funasrModel,
         realtime: 'Paraformer streaming',

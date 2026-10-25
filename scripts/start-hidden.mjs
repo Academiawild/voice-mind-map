@@ -57,7 +57,7 @@ async function ensureLocalAI() {
   }
 }
 
-await ensureLocalAI();
+if ((process.env.AI_PROVIDER ?? 'ollama') === 'ollama') await ensureLocalAI();
 
 const existing = readRuntimeManifest(paths.manifest);
 if (existing?.runtimeId && existing?.healthUrl && existing?.webUrl) {

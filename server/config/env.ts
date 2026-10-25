@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { z } from 'zod';
+import { validateRemoteAIBaseUrl } from '../infrastructure/ai/api-change-provider';
 
 const BooleanStringSchema = z.union([z.boolean(), z.string()]).transform((value, context) => {
   if (typeof value === 'boolean') {
@@ -33,6 +34,10 @@ const LocalAIBaseUrlSchema = z
   }, 'LOCAL_AI_BASE_URL must use a loopback HTTP address.');
 
 const EnvSchema = z.object({
+  AI_PROVIDER: z.enum(['ollama', 'api']).default('ollama'),
+  REMOTE_AI_BASE_URL: z.string().default(''),
+  REMOTE_AI_MODEL: z.string().default(''),
+  REMOTE_AI_API_KEY: z.string().default(''),
   DEBUG_MINDMAP: BooleanStringSchema.default(false),
   FUNASR_HTTP_PORT: z.coerce.number().int().positive().default(10096),
   FUNASR_MODEL: z.string().default('paraformer-zh'),
@@ -50,7 +55,10 @@ const EnvSchema = z.object({
 });
 
 export type AppEnv = {
-  provider: 'ollama';
+  provider: 'ollama' | 'api';
+  remoteAiBaseUrl?: string;
+  remoteAiModel?: string;
+  remoteAiApiKey?: string;
   host: '127.0.0.1';
   port: number;
   frontendPort: number;
@@ -77,8 +85,17 @@ export function loadEnv(): AppEnv {
     ...process.env,
   });
 
+  if (parsed.AI_PROVIDER === 'api') {
+    validateRemoteAIBaseUrl(parsed.REMOTE_AI_BASE_URL);
+    if (!parsed.REMOTE_AI_MODEL.trim() || !parsed.REMOTE_AI_API_KEY.trim()) {
+      throw new Error('REMOTE_AI_MODEL and REMOTE_AI_API_KEY are required for API mode.');
+    }
+  }
   const env: AppEnv = {
-    provider: 'ollama',
+    provider: parsed.AI_PROVIDER,
+    remoteAiBaseUrl: parsed.REMOTE_AI_BASE_URL,
+    remoteAiModel: parsed.REMOTE_AI_MODEL,
+    remoteAiApiKey: parsed.REMOTE_AI_API_KEY,
     host: '127.0.0.1',
     port: parsed.PORT,
     frontendPort: parsed.VITE_PORT,

@@ -8,6 +8,7 @@ export function createStatusRouter(options: {
   shutdownToken: string;
   aiReady: () => Promise<boolean>;
   aiModel: string;
+  aiProvider?: 'ollama' | 'api';
   transcriptionModels: { http: string; realtime: string };
   realtimePort: number;
   audioTranscriptionService: AudioTranscriptionService;
@@ -25,7 +26,7 @@ export function createStatusRouter(options: {
         service: 'voice-mind-map',
         runtimeId: options.runtimeId,
         shutdownToken: options.shutdownToken,
-        ai: { ready: aiReady, provider: 'ollama', model: options.aiModel },
+        ai: { ready: aiReady, provider: options.aiProvider ?? 'ollama', model: options.aiModel },
         transcription: {
           http: { ready: httpReady, model: options.transcriptionModels.http },
           realtime: { ready: realtimeReady, model: options.transcriptionModels.realtime },

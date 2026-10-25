@@ -10,7 +10,7 @@
 ## 不可破坏的边界
 
 - 只做 macOS 本地 Web MVP；不扩展账号、云同步、协作、桌面端或移动端。
-- AI 地址必须是 loopback HTTP，不能把导图内容发送到远程模型。
+- Ollama 模式仍只接受 loopback HTTP。用户明确选择在线 API 后可使用独立的 HTTPS 远程配置；不得把本地 Ollama 地址限制放宽或把密钥传给前端。在线 API 会发送转写文字、当前导图和整理上下文；语音识别仍在本地。
 - `shared/mind-map/*` 是最敏感的领域逻辑；所有 AI 输出必须先过 ChangeSet schema，再经过 guard/apply 和完整响应校验。
 - 不得恢复 full-tree fallback、normalize、模糊标题寻址、旧 source/命令别名或 V1 endpoint。
 - 浏览器只连接同源 `/api`，不得直连 FunASR。
@@ -29,6 +29,8 @@
 - `compiler.ts`：当前文档的 compact context、选择、坐标和最近反馈。
 
 Ollama provider 使用有限层级展开的 ChangeSet JSON Schema 约束本地生成：前三层节点要求完整字段和 source 枚举，relations/group/navigation 字段也有约束；更深节点仍允许生成并交给规范 Zod schema 验证。不要将递归 `$ref` 节点 schema 直接交给 Ollama grammar。provider 负责请求、一次低温修复和错误归一化，application service 负责 revision、policy、确定性应用、来源纠正和最终响应校验。模型原始 `unknown` 不能绕过 Zod。
+
+在线接入位于 `server/infrastructure/ai/api-change-provider.ts`；使用兼容 Chat Completions 的接口，保留完整 ChangeSet schema 校验、一次修复、取消传播和 application service 的 revision/guard/apply 校验。禁止日志输出密钥或上游原始报错正文。`AI_PROVIDER=api` 仅由用户本机 `.env` 启用，密钥不得提交。启动器和 doctor 在 API 模式跳过 Ollama 依赖。
 
 ## 前端状态
 

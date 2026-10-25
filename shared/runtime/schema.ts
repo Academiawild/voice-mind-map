@@ -9,7 +9,7 @@ export const RuntimeStatusSchema = z
     ai: z
       .object({
         ready: z.boolean(),
-        provider: z.literal('ollama'),
+        provider: z.enum(['ollama', 'api']),
         model: z.string().min(1),
       })
       .strict(),

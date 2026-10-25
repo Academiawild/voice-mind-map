@@ -26,13 +26,15 @@ const localAIBaseUrl = normalizeLocalAIBaseUrl(
 );
 const localAIModel = process.env.LOCAL_AI_MODEL?.trim() || 'qwen-q4kp';
 
-if ((await readLocalAIModels(localAIBaseUrl)) === null) {
-  await new Promise((resolvePromise) => {
-    execFile('open', ['-gja', 'Ollama'], () => resolvePromise());
-  });
-}
-if (!(await waitForLocalAIModel(localAIBaseUrl, localAIModel))) {
-  throw new Error(`Local Ollama model ${localAIModel} is unavailable.`);
+if ((process.env.AI_PROVIDER ?? 'ollama') === 'ollama') {
+  if ((await readLocalAIModels(localAIBaseUrl)) === null) {
+    await new Promise((resolvePromise) => {
+      execFile('open', ['-gja', 'Ollama'], () => resolvePromise());
+    });
+  }
+  if (!(await waitForLocalAIModel(localAIBaseUrl, localAIModel))) {
+    throw new Error(`Local Ollama model ${localAIModel} is unavailable.`);
+  }
 }
 const env = createRuntimeEnvironment({
   mode: 'development',

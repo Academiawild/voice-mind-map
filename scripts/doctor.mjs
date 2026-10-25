@@ -79,6 +79,21 @@ function checkEnv() {
 }
 
 async function checkLocalAI() {
+  if (process.env.AI_PROVIDER === 'api') {
+    const configured = Boolean(
+      process.env.REMOTE_AI_BASE_URL?.trim() &&
+      process.env.REMOTE_AI_MODEL?.trim() &&
+      process.env.REMOTE_AI_API_KEY?.trim(),
+    );
+    addCheck(
+      configured ? 'pass' : 'fail',
+      'online AI configuration',
+      configured
+        ? 'Key is configured; actual model access is checked by the running app.'
+        : 'Set REMOTE_AI_BASE_URL, REMOTE_AI_MODEL and REMOTE_AI_API_KEY.',
+    );
+    return;
+  }
   const baseUrl = process.env.LOCAL_AI_BASE_URL?.trim() || 'http://127.0.0.1:11434';
   const model = process.env.LOCAL_AI_MODEL?.trim() || 'qwen-q4kp';
   const models = await readLocalAIModels(baseUrl);
